@@ -1,0 +1,44 @@
+name: Deploy na VM (self-hosted)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    # Roteia para o runner certo (label exclusivo do repositório)
+    runs-on: [self-hosted, linux, X64, rpa106]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sincronizar código com a pasta de produção
+        run: |
+          set -euo pipefail
+          TARGET="/mnt/volume2/rpa/rpa106-criar-atendimento-exame"
+          if [ ! -d "$TARGET/.git" ]; then
+            echo "Pasta não existe ou não é um repositório git. Clonando..."
+            REPO_URL="https://github.com/digital-oncoclinicas/rpa106-criar-atendimento-exame.git"
+            git clone --branch main "$REPO_URL" "$TARGET"
+          
+          else
+            echo "Pasta já existe. Atualizando com git pull..."
+            cd "$TARGET"
+            git pull origin main
+          fi
+
+      - name: Gerar .env a partir dos secrets
+        run: |
+          set -euo pipefail
+          TARGET="/mnt/volume2/rpa/rpa106-criar-atendimento-exame"
+          cat > "$TARGET/.env" <<'EOF'
+          DIR_RPA=${{ vars.DIR_RPA }}
+          RPA_DB_USER=${{ secrets.RPA_DB_USER }}
+          RPA_DB_PWD=${{ secrets.RPA_DB_PWD }}
+          TASY_DB_USER=${{ secrets.TASY_DB_USER }}
+          TASY_DB_PWD=${{ secrets.TASY_DB_PWD }}
+          TASY_USER=${{ secrets.TASY_USER }}
+          TASY_PWD=${{ secrets.TASY_PWD }}
+          EOF
+#          chmod 600 "$TARGET/.env"  # Somente o dono (usuário do runner) tem permissão de leitura e escrita.

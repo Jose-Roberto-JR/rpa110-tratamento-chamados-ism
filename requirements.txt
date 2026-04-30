@@ -1,0 +1,11 @@
+# Lib usada para salvar logs no Grafana Loki (logging_loki)
+python-logging-loki==0.3.1
+
+# Lib de conexão com o banco de dados do RPA (SQL Server)
+pyodbc==5.2.0
+
+# Carregar variáreis de ambiente
+python-dotenv~=1.1.0
+
+# Lib usada para interação com o browser
+selenium==4.32.0
